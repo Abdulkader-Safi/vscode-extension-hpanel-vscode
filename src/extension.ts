@@ -217,6 +217,55 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar.setSnoozed(value);
   });
 
+  // Phase 5 — Docker tab.
+  provider.register("listDockerProjects", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.docker.list(vpsId);
+  });
+  provider.register("getDockerContainers", async ({ vpsId, name }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.docker.containers(vpsId, name);
+  });
+  provider.register("getDockerLogs", async ({ vpsId, name }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.docker.logs(vpsId, name);
+  });
+  provider.register("dockerAction", async ({ vpsId, name, action }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    if (action === "start") {
+      return client.docker.start(vpsId, name);
+    }
+    if (action === "stop") {
+      return client.docker.stop(vpsId, name);
+    }
+    if (action === "restart") {
+      return client.docker.restart(vpsId, name);
+    }
+    if (action === "update") {
+      return client.docker.update(vpsId, name);
+    }
+    return client.docker.down(vpsId, name);
+  });
+  provider.register("createDockerProject", async ({ vpsId, name, compose, env }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.docker.create(vpsId, { name, compose, env });
+  });
+
   context.subscriptions.push(
     provider,
     preferences,

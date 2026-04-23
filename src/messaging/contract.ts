@@ -1,4 +1,11 @@
-import type { PublicKey, Vps, VpsAction, VpsMetrics } from "../api/types";
+import type {
+  DockerContainer,
+  DockerProject,
+  PublicKey,
+  Vps,
+  VpsAction,
+  VpsMetrics,
+} from "../api/types";
 import type {
   PreferenceSchema,
   DeployDefaults,
@@ -76,6 +83,37 @@ export interface RequestMap {
   deleteAccountKey: { request: { id: number }; response: void };
   scanSshKeys: { request: undefined; response: LocalSshKey[] };
   setSnoozeStatusBar: { request: { value: boolean }; response: void };
+
+  // Phase 5 — Docker tab.
+  listDockerProjects: {
+    request: { vpsId: number };
+    response: DockerProject[];
+  };
+  getDockerContainers: {
+    request: { vpsId: number; name: string };
+    response: DockerContainer[];
+  };
+  getDockerLogs: {
+    request: { vpsId: number; name: string };
+    response: { lines: string[] };
+  };
+  dockerAction: {
+    request: {
+      vpsId: number;
+      name: string;
+      action: "start" | "stop" | "restart" | "update" | "delete";
+    };
+    response: VpsAction;
+  };
+  createDockerProject: {
+    request: {
+      vpsId: number;
+      name: string;
+      compose: string;
+      env?: Record<string, string>;
+    };
+    response: DockerProject;
+  };
 }
 
 export type RequestType = keyof RequestMap;

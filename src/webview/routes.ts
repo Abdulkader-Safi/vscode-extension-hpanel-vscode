@@ -1,7 +1,7 @@
 import Onboarding from "./pages/Onboarding.svelte";
 import Overview from "./pages/Overview.svelte";
 import Settings from "./pages/Settings.svelte";
-import DockerPlaceholder from "./pages/placeholders/DockerPlaceholder.svelte";
+import Docker from "./pages/Docker.svelte";
 import DeployPlaceholder from "./pages/placeholders/DeployPlaceholder.svelte";
 import FirewallPlaceholder from "./pages/placeholders/FirewallPlaceholder.svelte";
 import SnapshotsPlaceholder from "./pages/placeholders/SnapshotsPlaceholder.svelte";
@@ -9,7 +9,7 @@ import SnapshotsPlaceholder from "./pages/placeholders/SnapshotsPlaceholder.svel
 export const routes = {
   "/onboarding": Onboarding,
   "/": Overview,
-  "/docker": DockerPlaceholder,
+  "/docker": Docker,
   "/deploy": DeployPlaceholder,
   "/firewall": FirewallPlaceholder,
   "/snapshots": SnapshotsPlaceholder,
