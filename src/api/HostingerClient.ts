@@ -181,10 +181,13 @@ export class HostingerClient {
       this.request<Vps[]>("GET", "/api/vps/v1/virtual-machines"),
     get: (id: number): Promise<Vps> =>
       this.request<Vps>("GET", `/api/vps/v1/virtual-machines/${id}`),
-    metrics: (id: number): Promise<VpsMetrics> =>
+    metrics: (
+      id: number,
+      opts: { dateFrom: string; dateTo: string },
+    ): Promise<VpsMetrics> =>
       this.request<VpsMetrics>(
         "GET",
-        `/api/vps/v1/virtual-machines/${id}/metrics`,
+        `/api/vps/v1/virtual-machines/${id}/metrics?date_from=${encodeURIComponent(opts.dateFrom)}&date_to=${encodeURIComponent(opts.dateTo)}`,
       ),
     actions: (id: number): Promise<VpsAction[]> =>
       this.request<VpsAction[]>(

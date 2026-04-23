@@ -61,7 +61,7 @@ suite("TokenStore", () => {
     const fetchImpl = (async () =>
       new Response(
         JSON.stringify([
-          { id: 1, hostname: "vps1", state: "running", ip_address: "1.2.3.4" },
+          { id: 1, hostname: "vps1", state: "running" },
         ]),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )) as unknown as typeof fetch;

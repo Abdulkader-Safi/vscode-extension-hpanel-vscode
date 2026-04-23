@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { HostingerWebviewProvider } from "./HostingerWebviewProvider";
 import { TokenStore } from "./auth/TokenStore";
 import { Preferences } from "./state/Preferences";
+import { HostingerClient } from "./api/HostingerClient";
 
 export function activate(context: vscode.ExtensionContext): void {
   const tokenStore = new TokenStore(context.secrets);
@@ -12,7 +13,16 @@ export function activate(context: vscode.ExtensionContext): void {
     preferences
   );
 
-  // Phase 1 + 2 message handlers — extended per phase.
+  // Returns a fresh client bound to the current token, or null when not connected.
+  async function activeClient(): Promise<HostingerClient | null> {
+    const token = await tokenStore.get();
+    if (!token) {
+      return null;
+    }
+    return new HostingerClient(token);
+  }
+
+  // Phase 1 + 2 message handlers.
   provider.register("hasToken", () => tokenStore.has());
   provider.register("validateToken", async ({ token }) => {
     const result = await tokenStore.validate(token);
@@ -32,6 +42,72 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     await vscode.env.openExternal(vscode.Uri.parse(url));
   });
+
+  // Phase 3 — Overview tab.
+  provider.register("getActiveVps", async () => {
+    const client = await activeClient();
+    if (!client) {
+      return null;
+    }
+    let id = preferences.get("activeVpsId");
+    if (id === null) {
+      const list = await client.vps.list();
+      if (list.length === 0) {
+        return null;
+      }
+      const first = list[0]!;
+      await preferences.set("activeVpsId", first.id);
+      return first;
+    }
+    return client.vps.get(id);
+  });
+  provider.register("getVpsMetrics", async ({ id }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    const now = new Date();
+    const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return client.vps.metrics(id, {
+      dateFrom: dayAgo.toISOString(),
+      dateTo: now.toISOString(),
+    });
+  });
+  provider.register("getVpsActions", async ({ id }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.vps.actions(id);
+  });
+  provider.register("vpsAction", async ({ id, action }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    if (action === "restart") {
+      return client.vps.restart(id);
+    }
+    if (action === "stop") {
+      return client.vps.stop(id);
+    }
+    return client.vps.recovery(id);
+  });
+  provider.register("getAttachedKeys", async ({ id }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.publicKeys.listAttached(id);
+  });
+  provider.register("openTerminal", ({ command, name }) => {
+    const term = vscode.window.createTerminal({
+      name: name ?? "Hostinger VPS",
+    });
+    term.show();
+    term.sendText(command, true);
+  });
+  provider.register("getPreferences", () => preferences.snapshot());
 
   context.subscriptions.push(
     provider,

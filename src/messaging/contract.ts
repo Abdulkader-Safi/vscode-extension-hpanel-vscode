@@ -1,4 +1,16 @@
-import type { Vps } from "../api/types";
+import type {
+  PublicKey,
+  Vps,
+  VpsAction,
+  VpsMetrics,
+} from "../api/types";
+import type { PreferenceSchema } from "../state/Preferences";
+
+// Re-export so webview-side modules can consume PreferenceSchema without
+// importing from src/state/* (which pulls vscode at runtime).
+export type { PreferenceSchema };
+
+export type VpsActionKind = "restart" | "stop" | "recovery";
 
 // Map of request type → { request payload, response payload }.
 // Phases 2-8 extend this map with their own entries.
@@ -11,6 +23,24 @@ export interface RequestMap {
   getActiveVpsId: { request: undefined; response: number | null };
   setActiveVpsId: { request: { id: number | null }; response: void };
   openExternal: { request: { url: string }; response: void };
+
+  // Phase 3 — Overview tab.
+  getActiveVps: { request: undefined; response: Vps | null };
+  getVpsMetrics: { request: { id: number }; response: VpsMetrics };
+  getVpsActions: {
+    request: { id: number; limit?: number };
+    response: VpsAction[];
+  };
+  vpsAction: {
+    request: { id: number; action: VpsActionKind };
+    response: VpsAction;
+  };
+  getAttachedKeys: { request: { id: number }; response: PublicKey[] };
+  openTerminal: {
+    request: { command: string; name?: string };
+    response: void;
+  };
+  getPreferences: { request: undefined; response: PreferenceSchema };
 }
 
 export type RequestType = keyof RequestMap;

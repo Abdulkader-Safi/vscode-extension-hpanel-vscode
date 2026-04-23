@@ -62,7 +62,7 @@ suite("Onboarding flow (validateToken handler chain)", () => {
     const fetchImpl = (async () =>
       new Response(
         JSON.stringify([
-          { id: 1, hostname: "vps1", state: "running", ip_address: "1.2.3.4" },
+          { id: 1, hostname: "vps1", state: "running" },
         ]),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )) as unknown as typeof fetch;
@@ -140,7 +140,7 @@ suite("Onboarding flow (validateToken handler chain)", () => {
   test("token persists across a simulated panel close+reopen (round-trip via SecretStorage)", async () => {
     const fetchImpl = (async () =>
       new Response(
-        JSON.stringify([{ id: 1, hostname: "h", state: "running", ip_address: "1.2.3.4" }]),
+        JSON.stringify([{ id: 1, hostname: "h", state: "running" }]),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )) as unknown as typeof fetch;
 

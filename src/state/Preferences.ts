@@ -89,4 +89,17 @@ export class Preferences {
   static defaults(): PreferenceSchema {
     return structuredClone(DEFAULTS);
   }
+
+  /** Full schema with stored values merged over defaults — for one-shot reads. */
+  snapshot(): PreferenceSchema {
+    return {
+      activeVpsId: this.get("activeVpsId"),
+      pollingEnabled: this.get("pollingEnabled"),
+      pollingIntervalMs: this.get("pollingIntervalMs"),
+      statusBarEnabled: this.get("statusBarEnabled"),
+      thresholds: this.get("thresholds"),
+      notificationsOnThreshold: this.get("notificationsOnThreshold"),
+      deploy: this.get("deploy"),
+    };
+  }
 }

@@ -1,6 +1,6 @@
-// Conservative manual types for Hostinger Public API entities.
-// Fields are added as later phases need them; nothing here is speculative.
+// Manual types for Hostinger Public API entities.
 // PRD §9 endpoint catalog drives the shape of these types.
+// Refined against real account responses (Apr 2026).
 
 export type VpsState =
   | "running"
@@ -9,32 +9,63 @@ export type VpsState =
   | "stopping"
   | "unknown";
 
+export type VpsActionsLock = "locked" | "unlocked";
+
+export interface VpsIpAddress {
+  id: number;
+  address: string;
+  ptr: string | null;
+}
+
+export interface VpsTemplate {
+  id: number;
+  name: string;
+  description?: string;
+  documentation?: string | null;
+}
+
 export interface Vps {
   id: number;
+  firewall_group_id?: number | null;
+  subscription_id?: string;
+  data_center_id?: number;
+  plan?: string;
   hostname: string;
   state: VpsState;
-  ip_address: string;
-  ipv6_address?: string;
-  plan?: string;
-  cpu_cores?: number;
-  ram_mb?: number;
-  disk_gb?: number;
-  template?: string;
+  actions_lock?: VpsActionsLock;
+  cpus?: number;
+  memory?: number; // MB
+  disk?: number; // MB
+  bandwidth?: number;
+  ns1?: string;
+  ns2?: string;
+  ipv4?: VpsIpAddress[];
+  ipv6?: VpsIpAddress[];
+  template?: VpsTemplate;
   created_at?: string;
 }
 
-export interface VpsMetricsSample {
-  cpu_pct: number;
-  ram_pct: number;
-  disk_pct: number;
-  network_rx_bps: number;
-  network_tx_bps: number;
-  sampled_at: string;
+/**
+ * One time-series of metric samples returned by `/metrics`.
+ * `usage` is keyed by Unix epoch seconds (as a string) → value.
+ * `unit` describes what the value means: "%" for CPU, "bytes" for RAM/disk, etc.
+ */
+export interface VpsMetricSeries {
+  unit: string;
+  usage: Record<string, number>;
 }
 
+/**
+ * Top-level metrics response. Hostinger returns one series per resource;
+ * exact key set may include additional series, hence the index signature.
+ */
 export interface VpsMetrics {
-  current: VpsMetricsSample;
-  history: VpsMetricsSample[];
+  cpu_usage?: VpsMetricSeries;
+  ram_usage?: VpsMetricSeries;
+  disk_usage?: VpsMetricSeries;
+  network_in_usage?: VpsMetricSeries;
+  network_out_usage?: VpsMetricSeries;
+  [key: string]: VpsMetricSeries | undefined;
 }
 
 export type VpsActionStatus = "pending" | "running" | "completed" | "failed";
