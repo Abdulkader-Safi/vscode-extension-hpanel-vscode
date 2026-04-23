@@ -10,6 +10,7 @@ export interface RequestMap {
   };
   getActiveVpsId: { request: undefined; response: number | null };
   setActiveVpsId: { request: { id: number | null }; response: void };
+  openExternal: { request: { url: string }; response: void };
 }
 
 export type RequestType = keyof RequestMap;
@@ -21,6 +22,7 @@ export interface EventMap {
   tokenChanged: { hasToken: boolean };
   preferenceChanged: { key: string };
   reload: undefined;
+  navigate: { path: string };
 }
 
 export type EventType = keyof EventMap;

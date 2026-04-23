@@ -16,19 +16,24 @@ acceptance criteria per item.
 
 ## Phases
 
-| #   | File                                                                         | Focus                                    | PRD refs         |
-| --- | ---------------------------------------------------------------------------- | ---------------------------------------- | ---------------- |
-| 0   | [phase-00-foundation.md](./phase-00-foundation.md)                           | Rebrand scaffold, command/panel ids      | §2.1             |
-| 1   | [phase-01-core-architecture.md](./phase-01-core-architecture.md)             | API client, messaging, design system     | §6               |
-| 2   | [phase-02-onboarding-auth.md](./phase-02-onboarding-auth.md)                 | Token capture, validation, SecretStorage | §3.1             |
-| 3   | [phase-03-overview-tab.md](./phase-03-overview-tab.md)                       | Server identity, metrics, actions, SSH   | §3.2             |
-| 4   | [phase-04-settings-tab.md](./phase-04-settings-tab.md)                       | Connection, VPS, polling, keys, danger   | §3.7, §4.1, §4.6 |
-| 5   | [phase-05-docker-tab.md](./phase-05-docker-tab.md)                           | Compose projects, containers, logs       | §3.3             |
-| 6   | [phase-06-snapshots-tab.md](./phase-06-snapshots-tab.md)                     | Manual snapshots, automated backups      | §3.6             |
-| 7   | [phase-07-firewall-tab.md](./phase-07-firewall-tab.md)                       | Firewalls, rules, sync                   | §3.5             |
-| 8   | [phase-08-deploy-tab.md](./phase-08-deploy-tab.md)                           | One-click deploy, wizard, pipeline       | §3.4             |
-| 9   | [phase-09-global-behaviors-polish.md](./phase-09-global-behaviors-polish.md) | Global patterns, a11y, theming           | §4               |
-| 10  | [phase-10-release-marketplace.md](./phase-10-release-marketplace.md)         | Packaging, marketplace, launch           | §2.1, §7         |
+| #   | File                                                                         | Focus                                    | PRD refs         | Status     |
+| --- | ---------------------------------------------------------------------------- | ---------------------------------------- | ---------------- | ---------- |
+| 0   | [phase-00-foundation.md](./phase-00-foundation.md)                           | Rebrand scaffold, command/panel ids      | §2.1             | ✅ Done    |
+| 1   | [phase-01-core-architecture.md](./phase-01-core-architecture.md)             | API client, messaging, design system     | §6               | ✅ Done    |
+| 2   | [phase-02-onboarding-auth.md](./phase-02-onboarding-auth.md)                 | Token capture, validation, SecretStorage | §3.1             | ✅ Done    |
+| 3   | [phase-03-overview-tab.md](./phase-03-overview-tab.md)                       | Server identity, metrics, actions, SSH   | §3.2             | ⬜ Pending |
+| 4   | [phase-04-settings-tab.md](./phase-04-settings-tab.md)                       | Connection, VPS, polling, keys, danger   | §3.7, §4.1, §4.6 | ⬜ Pending |
+| 5   | [phase-05-docker-tab.md](./phase-05-docker-tab.md)                           | Compose projects, containers, logs       | §3.3             | ⬜ Pending |
+| 6   | [phase-06-snapshots-tab.md](./phase-06-snapshots-tab.md)                     | Manual snapshots, automated backups      | §3.6             | ⬜ Pending |
+| 7   | [phase-07-firewall-tab.md](./phase-07-firewall-tab.md)                       | Firewalls, rules, sync                   | §3.5             | ⬜ Pending |
+| 8   | [phase-08-deploy-tab.md](./phase-08-deploy-tab.md)                           | One-click deploy, wizard, pipeline       | §3.4             | ⬜ Pending |
+| 9   | [phase-09-global-behaviors-polish.md](./phase-09-global-behaviors-polish.md) | Global patterns, a11y, theming           | §4               | ⬜ Pending |
+| 10  | [phase-10-release-marketplace.md](./phase-10-release-marketplace.md)         | Packaging, marketplace, launch           | §2.1, §7         | ⬜ Pending |
+
+¹ Phase 0: `onStartupFinished` activation event + activation/commands test stub deferred to Phase 4 / Phase 9 respectively (see file for notes).
+² Phase 1: visual smoke page for design-system primitives deferred (will land alongside a `/dev/components` route when needed). Two minor deviations documented inline.
+
+**Automated state at HEAD:** `check-types` 234 files / 0 errors, `lint` 0 errors, `npm test` **26 passing**, `npm run package` produces `dist/extension.js` (11K) + `dist/webview.js` (~70K) + `dist/webview.css` (~20K).
 
 ## Tab order rationale
 

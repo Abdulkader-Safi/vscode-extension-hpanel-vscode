@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext): void {
     preferences
   );
 
-  // Phase 1 message handlers — extended per phase.
+  // Phase 1 + 2 message handlers — extended per phase.
   provider.register("hasToken", () => tokenStore.has());
   provider.register("validateToken", async ({ token }) => {
     const result = await tokenStore.validate(token);
@@ -26,6 +26,12 @@ export function activate(context: vscode.ExtensionContext): void {
   provider.register("setActiveVpsId", async ({ id }) => {
     await preferences.set("activeVpsId", id);
   });
+  provider.register("openExternal", async ({ url }) => {
+    if (!url.startsWith("https://")) {
+      throw new Error("Only https:// URLs may be opened externally.");
+    }
+    await vscode.env.openExternal(vscode.Uri.parse(url));
+  });
 
   context.subscriptions.push(
     provider,
@@ -35,6 +41,11 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("hostinger-vps.connect", () => {
       provider.open();
+      // Soft race: if this is the first open the webview hasn't mounted its
+      // navigate listener yet, but the auth guard handles no-token → onboarding
+      // anyway. The emit only matters when a panel is already open and the
+      // user wants to re-onboard.
+      provider.emit("navigate", { path: "/onboarding" });
     }),
     vscode.commands.registerCommand("hostinger-vps.disconnect", async () => {
       await tokenStore.clear();

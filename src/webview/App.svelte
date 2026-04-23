@@ -37,7 +37,7 @@
             }
         })();
 
-        const off = host().on("tokenChanged", (payload) => {
+        const offToken = host().on("tokenChanged", (payload) => {
             hasToken = payload.hasToken;
             if (!payload.hasToken && router.location !== "/onboarding") {
                 replace("/onboarding");
@@ -46,9 +46,14 @@
             }
         });
 
+        const offNav = host().on("navigate", ({ path }) => {
+            replace(path);
+        });
+
         return () => {
             cancelled = true;
-            off();
+            offToken();
+            offNav();
         };
     });
 
