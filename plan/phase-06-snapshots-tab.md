@@ -1,0 +1,66 @@
+# Phase 6 — Snapshots Tab
+
+> **Goal:** Provide manual-snapshot lifecycle and an automated-backup browser so users can save state before risky changes and restore on failure.
+> **PRD sections:** §3.6
+> **Depends on:** Phase 1 (API, design), Phase 4 (active VPS)
+> **Estimated effort:** 1 day
+
+---
+
+## §3.6.1 Manual Snapshot Management
+
+- [ ] Build `ManualSnapshot.svelte` — _file: `src/webview/pages/Snapshots/ManualSnapshot.svelte`_
+  - Endpoint: `GET /api/vps/v1/virtual-machines/{id}/snapshot`
+  - When snapshot exists: card with creation date, relative age ("3 days ago"), estimated size
+  - "Restore snapshot" button → `<ConfirmInline>` → `POST /snapshot/restore`
+  - "Delete snapshot" button → `<ConfirmInline>` → `DELETE /snapshot`
+  - "Create new snapshot" button → `<ConfirmInline>` → `POST /snapshot`
+    - Visible warning copy: "Creating a new snapshot will overwrite the existing one"
+  - Progress indicator while creation is in-flight; refetch on completion
+  - Empty state with prompt to create when no snapshot exists (PRD §4.5)
+  - Acceptance: button states reflect API state; double-click protection in flight.
+
+## §3.6.2 Automated Backup Browser
+
+- [ ] Build `BackupList.svelte` — _file: `src/webview/pages/Snapshots/BackupList.svelte`_
+  - Endpoint: `GET /api/vps/v1/virtual-machines/{id}/backups`
+  - Each row: backup date, time, relative age, "Restore" button
+  - Empty state when no backups (PRD §4.5)
+
+## Restore confirmation modal (the second permitted modal)
+
+- [ ] Build `RestoreBackupModal.svelte` — _file: `src/webview/pages/Snapshots/RestoreBackupModal.svelte`_
+  - Per PRD §3.6.2 — full modal, not inline confirm
+  - Headline: warning copy about destructive action
+  - Required input: user must type the VPS hostname exactly to enable the Restore button
+  - Restore button disabled until typed string === hostname (case-sensitive)
+  - On submit: `POST /api/vps/v1/virtual-machines/{id}/backups/{backupId}/restore`
+  - Acceptance: any typo keeps the button disabled; pasting hostname succeeds.
+
+## Schedule toggle
+
+- [ ] Toggle for weekly automated backup schedule at top of `BackupList.svelte`
+  - Endpoint: per Hostinger API for backup schedule (verify exact endpoint when implementing)
+  - Acceptance: toggle off → confirmation → API call → toggle reflects new server state.
+
+## Page composition
+
+- [ ] Compose into `Snapshots.svelte` — _file: `src/webview/pages/Snapshots.svelte`_
+  - Layout: Manual Snapshot section (top) → Automated Backups section (below)
+  - Skeleton during initial load
+
+## Tests
+
+- [ ] Hostname-match logic for restore modal — _file: `src/webview/pages/Snapshots/__tests__/RestoreBackupModal.test.ts`_
+- [ ] Overwrite warning surfaces when snapshot exists
+- [ ] Restore button enable/disable flips correctly with input changes
+- [ ] Schedule toggle updates server state and survives reload
+
+## Verification
+
+1. Open Snapshots tab on a VPS without snapshot → empty state with create button.
+2. Create snapshot → progress indicator → snapshot card appears with current date.
+3. Click Create again → see the overwrite warning copy.
+4. Backup list populates with weekly backups.
+5. Click Restore on a backup → modal opens → button disabled until hostname typed exactly → on submit, API receives the restore request.
+6. Toggle weekly backup off → confirm → schedule updates.
