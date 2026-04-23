@@ -1,4 +1,4 @@
-import type { VpsMetricSeries } from "../../api/types";
+import type { VpsMetrics, VpsMetricSeries } from "../../api/types";
 
 /** Sort the series keys numerically and return the value at the latest one. */
 export function latestValue(
@@ -27,13 +27,26 @@ export function latestValue(
 export function timeSeriesValues(
   series: VpsMetricSeries | undefined
 ): number[] {
+  return timeSeriesEntries(series).map((e) => e.value);
+}
+
+/** Time-ordered sequence of timestamps (Unix epoch seconds). */
+export function timeSeriesTimestamps(
+  series: VpsMetricSeries | undefined
+): number[] {
+  return timeSeriesEntries(series).map((e) => e.ts);
+}
+
+/** Paired timestamp + value entries, sorted by ascending timestamp. */
+export function timeSeriesEntries(
+  series: VpsMetricSeries | undefined
+): { ts: number; value: number }[] {
   if (!series) {
     return [];
   }
   return Object.entries(series.usage)
-    .map(([k, v]) => [Number(k), v] as const)
-    .sort((a, b) => a[0] - b[0])
-    .map(([, v]) => v);
+    .map(([k, v]) => ({ ts: Number(k), value: v }))
+    .sort((a, b) => a.ts - b.ts);
 }
 
 /** MB → bytes (the unit returned in `Vps.memory` and `Vps.disk`). */
@@ -67,6 +80,23 @@ export function formatBytesPerSecond(bps: number | undefined): string {
   return `${formatBytes(bps)}/s`;
 }
 
+/** Format a duration in seconds as "<d>d <h>h" / "<h>h <m>m" / "<m>m". */
+export function formatDuration(seconds: number | undefined): string {
+  if (seconds === undefined || !Number.isFinite(seconds) || seconds < 0) {
+    return "—";
+  }
+  const d = Math.floor(seconds / 86_400);
+  const h = Math.floor((seconds % 86_400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) {
+    return `${d}d ${h}h`;
+  }
+  if (h > 0) {
+    return `${h}h ${m}m`;
+  }
+  return `${m}m`;
+}
+
 /** Convert a value to a percentage of total, clamped to [0, 100]. */
 export function pctOf(
   value: number | undefined,
@@ -76,4 +106,25 @@ export function pctOf(
     return undefined;
   }
   return Math.min(100, Math.max(0, (value / total) * 100));
+}
+
+/**
+ * Return the first metric series whose key matches one of `candidates`
+ * AND has at least one sample. Used to absorb naming variants until the
+ * Hostinger API field names are confirmed against real responses.
+ */
+export function pickSeries(
+  metrics: VpsMetrics | null | undefined,
+  candidates: readonly string[]
+): VpsMetricSeries | undefined {
+  if (!metrics) {
+    return undefined;
+  }
+  for (const key of candidates) {
+    const series = metrics[key];
+    if (series && Object.keys(series.usage).length > 0) {
+      return series;
+    }
+  }
+  return undefined;
 }

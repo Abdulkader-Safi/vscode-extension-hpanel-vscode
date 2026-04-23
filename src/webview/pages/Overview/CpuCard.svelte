@@ -3,7 +3,11 @@
     import Sparkline from "../../lib/ui/Sparkline.svelte";
     import Skeleton from "../../lib/ui/Skeleton.svelte";
     import { exceeds } from "../../lib/thresholds";
-    import { latestValue, timeSeriesValues } from "../../lib/metrics";
+    import {
+        latestValue,
+        timeSeriesValues,
+        timeSeriesTimestamps,
+    } from "../../lib/metrics";
     import type { VpsMetricSeries } from "../../../api/types";
 
     interface Props {
@@ -15,6 +19,7 @@
 
     const value = $derived(latestValue(series));
     const history = $derived(timeSeriesValues(series));
+    const timestamps = $derived(timeSeriesTimestamps(series));
     const warn = $derived(exceeds(value, threshold));
     const dailyAverage = $derived.by(() => {
         if (history.length === 0) {
@@ -22,6 +27,8 @@
         }
         return history.reduce((a, b) => a + b, 0) / history.length;
     });
+
+    const formatPct = (v: number): string => `${v.toFixed(2)} %`;
 </script>
 
 <Card>
@@ -54,7 +61,12 @@
                         class="text-sm text-vscode-description ml-0.5">%</span
                     >
                 </div>
-                <Sparkline data={history} tone={warn ? "warning" : "neutral"} />
+                <Sparkline
+                    data={history}
+                    {timestamps}
+                    tone={warn ? "warning" : "neutral"}
+                    formatValue={formatPct}
+                />
             </div>
             {#if dailyAverage !== undefined}
                 <div class="text-[10px] text-vscode-description mt-1">

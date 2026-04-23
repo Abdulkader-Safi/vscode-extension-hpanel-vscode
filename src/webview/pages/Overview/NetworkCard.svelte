@@ -4,7 +4,7 @@
     import Skeleton from "../../lib/ui/Skeleton.svelte";
     import {
         latestValue,
-        timeSeriesValues,
+        timeSeriesEntries,
         formatBytes,
     } from "../../lib/metrics";
     import type { VpsMetricSeries } from "../../../api/types";
@@ -12,25 +12,34 @@
     interface Props {
         inSeries: VpsMetricSeries | undefined;
         outSeries: VpsMetricSeries | undefined;
+        unavailable?: boolean;
     }
 
-    let { inSeries, outSeries }: Props = $props();
+    let { inSeries, outSeries, unavailable = false }: Props = $props();
 
     const inValue = $derived(latestValue(inSeries));
     const outValue = $derived(latestValue(outSeries));
 
-    // Combined sparkline: sum of in + out per timestamp (or whichever is present).
-    const sparkData = $derived.by(() => {
-        const inHist = timeSeriesValues(inSeries);
-        const outHist = timeSeriesValues(outSeries);
-        const len = Math.max(inHist.length, outHist.length);
-        const out: number[] = [];
-        for (let i = 0; i < len; i++) {
-            out.push((inHist[i] ?? 0) + (outHist[i] ?? 0));
+    // Combine in + out by timestamp for the sparkline. Use a plain object
+    // keyed by timestamp so out-of-order series still align point-by-point.
+    const combined = $derived.by(() => {
+        const merged: Record<number, number> = {};
+        for (const e of timeSeriesEntries(inSeries)) {
+            merged[e.ts] = (merged[e.ts] ?? 0) + e.value;
         }
-        return out;
+        for (const e of timeSeriesEntries(outSeries)) {
+            merged[e.ts] = (merged[e.ts] ?? 0) + e.value;
+        }
+        const sorted = Object.entries(merged)
+            .map(([k, v]) => [Number(k), v] as const)
+            .sort((a, b) => a[0] - b[0]);
+        return {
+            timestamps: sorted.map(([t]) => t),
+            values: sorted.map(([, v]) => v),
+        };
     });
 
+    const formatBytesValue = (v: number): string => formatBytes(v);
 </script>
 
 <Card>
@@ -40,7 +49,11 @@
         Network
     </h3>
 
-    {#if !inSeries && !outSeries}
+    {#if unavailable}
+        <p class="mt-2 text-xs text-vscode-description">
+            Not available from API
+        </p>
+    {:else if !inSeries && !outSeries}
         <div class="mt-2"><Skeleton height="48px" /></div>
     {:else}
         <div class="mt-2">
@@ -54,7 +67,11 @@
                     <div class="font-mono text-sm">{formatBytes(outValue)}</div>
                 </div>
                 <div class="ml-auto">
-                    <Sparkline data={sparkData} />
+                    <Sparkline
+                        data={combined.values}
+                        timestamps={combined.timestamps}
+                        formatValue={formatBytesValue}
+                    />
                 </div>
             </div>
         </div>
