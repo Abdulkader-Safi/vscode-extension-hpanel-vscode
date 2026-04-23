@@ -109,6 +109,45 @@ export function activate(context: vscode.ExtensionContext): void {
   });
   provider.register("getPreferences", () => preferences.snapshot());
 
+  // Phase 4 — Settings tab.
+  provider.register("listVps", async () => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.vps.list();
+  });
+  provider.register("testConnection", async () => {
+    const client = await activeClient();
+    if (!client) {
+      return { ok: false, error: "Not connected." } as const;
+    }
+    try {
+      const list = await client.vps.list();
+      return { ok: true, count: list.length } as const;
+    } catch (err) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      } as const;
+    }
+  });
+  provider.register("getTokenMasked", async () => {
+    const token = await tokenStore.get();
+    if (!token) {
+      return null;
+    }
+    const tail = token.slice(-4);
+    return `••••${tail}`;
+  });
+  provider.register("disconnect", async () => {
+    await tokenStore.clear();
+    provider.emit("tokenChanged", { hasToken: false });
+  });
+  provider.register("resetPreferences", async () => {
+    await preferences.reset();
+  });
+
   context.subscriptions.push(
     provider,
     preferences,

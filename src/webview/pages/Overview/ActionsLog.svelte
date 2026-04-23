@@ -109,18 +109,4 @@
             {/each}
         </ul>
     {/if}
-
-    <!-- DEBUG: temporary panel showing the raw actions payload so we can
-         align api/types.ts shape against the real Hostinger API.
-         Remove once types are confirmed. -->
-    <details
-        class="mt-3 text-xs text-vscode-description bg-vscode-code-bg border border-vscode-border rounded p-3"
-    >
-        <summary class="cursor-pointer">
-            DEBUG — raw actions payload (remove before release)
-        </summary>
-        <pre class="mt-2 overflow-auto font-mono text-[11px]">{error
-                ? `ERROR: ${error.message}`
-                : JSON.stringify(data, null, 2)}</pre>
-    </details>
 </Card>

@@ -81,9 +81,6 @@
         metrics !== null && !netInSeries && !netOutSeries,
     );
 
-    const availableKeys = $derived(
-        metrics ? Object.keys(metrics).join(", ") || "(none)" : "(loading)",
-    );
 </script>
 
 {#if error}
@@ -119,20 +116,3 @@
         </div>
     </div>
 {/if}
-
-<!-- DEBUG: temporary panel showing the raw metrics payload so we can
-     align the api/types.ts shape against the real Hostinger API.
-     Remove once types are confirmed. -->
-<details
-    class="mt-3 text-xs text-vscode-description bg-vscode-code-bg border border-vscode-border rounded p-3"
->
-    <summary class="cursor-pointer">
-        DEBUG — raw metrics payload (remove before release)
-    </summary>
-    <div class="text-[11px] mt-2">
-        Available keys: <span class="font-mono">{availableKeys}</span>
-    </div>
-    <pre class="mt-2 overflow-auto font-mono text-[11px]">{error
-            ? `ERROR: ${error.message}`
-            : JSON.stringify(metrics, null, 2)}</pre>
-</details>

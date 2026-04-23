@@ -4,6 +4,7 @@
     import { routes } from "./routes";
     import { host } from "./lib/host";
     import Toast from "./lib/ui/Toast.svelte";
+    import VpsSelector from "./lib/ui/VpsSelector.svelte";
 
     const tabs = [
         { path: "/", label: "Overview" },
@@ -97,7 +98,7 @@
                     </a>
                 {/each}
             </div>
-            <div data-slot="vps-selector"></div>
+            <VpsSelector />
         </header>
     {/if}
 

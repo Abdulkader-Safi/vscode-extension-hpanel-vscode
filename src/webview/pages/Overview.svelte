@@ -64,22 +64,5 @@
         <div class="lg:col-span-3">
             <ActionsLog vpsId={vps.id} />
         </div>
-        <!-- DEBUG: temporary panel showing the raw VPS payload so we can
-             align the api/types.ts shape against the real Hostinger API.
-             Remove once types are confirmed. -->
-        <div class="lg:col-span-3">
-            <details
-                class="text-xs text-vscode-description bg-vscode-code-bg border border-vscode-border rounded p-3"
-            >
-                <summary class="cursor-pointer">
-                    DEBUG — raw VPS payload (remove before release)
-                </summary>
-                <pre class="mt-2 overflow-auto font-mono text-[11px]">{JSON.stringify(
-                        vps,
-                        null,
-                        2,
-                    )}</pre>
-            </details>
-        </div>
     </div>
 {/if}
