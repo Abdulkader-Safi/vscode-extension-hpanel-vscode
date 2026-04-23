@@ -1,8 +1,12 @@
+import * as os from "node:os";
+import * as path from "node:path";
 import * as vscode from "vscode";
 import { HostingerWebviewProvider } from "./HostingerWebviewProvider";
 import { TokenStore } from "./auth/TokenStore";
 import { Preferences } from "./state/Preferences";
 import { HostingerClient } from "./api/HostingerClient";
+import { StatusBarController } from "./statusBar";
+import { scanSshKeys, type SshKeyFs } from "./auth/scanSshKeys";
 
 export function activate(context: vscode.ExtensionContext): void {
   const tokenStore = new TokenStore(context.secrets);
@@ -10,8 +14,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const provider = new HostingerWebviewProvider(
     context.extensionUri,
     tokenStore,
-    preferences
+    preferences,
   );
+  const statusBar = new StatusBarController(tokenStore, preferences);
 
   // Returns a fresh client bound to the current token, or null when not connected.
   async function activeClient(): Promise<HostingerClient | null> {
@@ -21,6 +26,22 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     return new HostingerClient(token);
   }
+
+  // FS adapter that only opens .pub files (filter happens inside scanSshKeys).
+  const sshFs: SshKeyFs = {
+    async listDir(dirPath) {
+      const entries = await vscode.workspace.fs.readDirectory(
+        vscode.Uri.file(dirPath),
+      );
+      return entries.map(([name]) => name);
+    },
+    async readTextFile(filePath) {
+      const bytes = await vscode.workspace.fs.readFile(
+        vscode.Uri.file(filePath),
+      );
+      return Buffer.from(bytes).toString("utf8");
+    },
+  };
 
   // Phase 1 + 2 message handlers.
   provider.register("hasToken", () => tokenStore.has());
@@ -147,10 +168,59 @@ export function activate(context: vscode.ExtensionContext): void {
   provider.register("resetPreferences", async () => {
     await preferences.reset();
   });
+  provider.register("setPollingEnabled", async ({ value }) => {
+    await preferences.set("pollingEnabled", value);
+  });
+  provider.register("setPollingIntervalMs", async ({ value }) => {
+    await preferences.set(
+      "pollingIntervalMs",
+      value as 30_000 | 60_000 | 120_000 | 300_000,
+    );
+  });
+  provider.register("setStatusBarEnabled", async ({ value }) => {
+    await preferences.set("statusBarEnabled", value);
+  });
+  provider.register("setThresholds", async ({ value }) => {
+    await preferences.set("thresholds", value);
+  });
+  provider.register("setNotificationsOnThreshold", async ({ value }) => {
+    await preferences.set("notificationsOnThreshold", value);
+  });
+  provider.register("setDeployDefaults", async ({ value }) => {
+    await preferences.set("deploy", value);
+  });
+  provider.register("listAccountKeys", async () => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.publicKeys.listAccount();
+  });
+  provider.register("createAccountKey", async ({ name, key }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.publicKeys.create({ name, key });
+  });
+  provider.register("deleteAccountKey", async ({ id }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.publicKeys.delete(id);
+  });
+  provider.register("scanSshKeys", () =>
+    scanSshKeys(sshFs, path.join(os.homedir(), ".ssh")),
+  );
+  provider.register("setSnoozeStatusBar", ({ value }) => {
+    statusBar.setSnoozed(value);
+  });
 
   context.subscriptions.push(
     provider,
     preferences,
+    statusBar,
     vscode.commands.registerCommand("hostinger-vps.open", () => {
       provider.open();
     }),
@@ -165,8 +235,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("hostinger-vps.disconnect", async () => {
       await tokenStore.clear();
       provider.emit("tokenChanged", { hasToken: false });
-      await vscode.window.showInformationMessage("Disconnected from Hostinger.");
-    })
+      await vscode.window.showInformationMessage(
+        "Disconnected from Hostinger.",
+      );
+    }),
   );
 }
 

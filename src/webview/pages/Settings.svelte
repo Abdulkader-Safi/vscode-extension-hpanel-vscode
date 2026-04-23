@@ -1,6 +1,10 @@
 <script lang="ts">
     import ConnectionPanel from "./Settings/ConnectionPanel.svelte";
     import VpsListPanel from "./Settings/VpsList.svelte";
+    import PollingSettings from "./Settings/PollingSettings.svelte";
+    import ThresholdSettings from "./Settings/ThresholdSettings.svelte";
+    import DeployDefaults from "./Settings/DeployDefaults.svelte";
+    import SshKeyManager from "./Settings/SshKeyManager.svelte";
     import DangerZone from "./Settings/DangerZone.svelte";
 
     const sections = [
@@ -45,33 +49,22 @@
 
         <section id="polling" class="scroll-mt-4">
             <h2 class="text-lg font-semibold mb-2">Polling & Status Bar</h2>
-            <p class="text-xs text-vscode-description">
-                Configure metric refresh rate and the status bar chip. Coming
-                in Milestone B.
-            </p>
+            <PollingSettings />
         </section>
 
         <section id="thresholds" class="scroll-mt-4">
             <h2 class="text-lg font-semibold mb-2">Thresholds</h2>
-            <p class="text-xs text-vscode-description">
-                CPU, RAM, and disk alert thresholds. Coming in Milestone B.
-            </p>
+            <ThresholdSettings />
         </section>
 
         <section id="deploy" class="scroll-mt-4">
             <h2 class="text-lg font-semibold mb-2">Deploy Defaults</h2>
-            <p class="text-xs text-vscode-description">
-                Pre-deploy snapshot, post-deploy action, default domain.
-                Coming in Milestone B.
-            </p>
+            <DeployDefaults />
         </section>
 
         <section id="ssh" class="scroll-mt-4">
             <h2 class="text-lg font-semibold mb-2">SSH Keys</h2>
-            <p class="text-xs text-vscode-description">
-                Manage account SSH keys and register local keys. Coming in
-                Milestone B.
-            </p>
+            <SshKeyManager />
         </section>
 
         <section id="danger" class="scroll-mt-4">

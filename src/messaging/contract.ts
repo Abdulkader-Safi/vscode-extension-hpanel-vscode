@@ -1,9 +1,4 @@
-import type {
-  PublicKey,
-  Vps,
-  VpsAction,
-  VpsMetrics,
-} from "../api/types";
+import type { PublicKey, Vps, VpsAction, VpsMetrics } from "../api/types";
 import type {
   PreferenceSchema,
   DeployDefaults,
@@ -80,6 +75,7 @@ export interface RequestMap {
   };
   deleteAccountKey: { request: { id: number }; response: void };
   scanSshKeys: { request: undefined; response: LocalSshKey[] };
+  setSnoozeStatusBar: { request: { value: boolean }; response: void };
 }
 
 export type RequestType = keyof RequestMap;
