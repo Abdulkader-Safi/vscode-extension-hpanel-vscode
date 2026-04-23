@@ -1,45 +1,114 @@
 <script lang="ts">
-    import Router, { link, router } from "svelte-spa-router";
-    import NotificationPage from "./pages/NotificationPage.svelte";
-    import DirectoryListPage from "./pages/DirectoryListPage.svelte";
+    import { onMount } from "svelte";
+    import Router, { link, router, replace } from "svelte-spa-router";
+    import { routes } from "./routes";
+    import { host } from "./lib/host";
+    import Toast from "./lib/ui/Toast.svelte";
 
-    const routes = {
-        "/": NotificationPage,
-        "/directory": DirectoryListPage,
-    };
-
-    const navItems = [
-        { path: "/", label: "Notifications" },
-        { path: "/directory", label: "Directory" },
+    const tabs = [
+        { path: "/", label: "Overview" },
+        { path: "/docker", label: "Docker" },
+        { path: "/deploy", label: "Deploy" },
+        { path: "/firewall", label: "Firewall" },
+        { path: "/snapshots", label: "Snapshots" },
+        { path: "/settings", label: "Settings" },
     ];
+
+    let authChecked = $state(false);
+    let hasToken = $state(false);
+
+    onMount(() => {
+        let cancelled = false;
+
+        void (async () => {
+            try {
+                const result = await host().request("hasToken");
+                if (!cancelled) {
+                    hasToken = result;
+                }
+            } catch {
+                if (!cancelled) {
+                    hasToken = false;
+                }
+            } finally {
+                if (!cancelled) {
+                    authChecked = true;
+                }
+            }
+        })();
+
+        const off = host().on("tokenChanged", (payload) => {
+            hasToken = payload.hasToken;
+            if (!payload.hasToken && router.location !== "/onboarding") {
+                replace("/onboarding");
+            } else if (payload.hasToken && router.location === "/onboarding") {
+                replace("/");
+            }
+        });
+
+        return () => {
+            cancelled = true;
+            off();
+        };
+    });
+
+    $effect(() => {
+        if (!authChecked) {
+            return;
+        }
+        if (!hasToken && router.location !== "/onboarding") {
+            replace("/onboarding");
+        }
+    });
+
+    const showTabs = $derived(
+        authChecked && hasToken && router.location !== "/onboarding",
+    );
 </script>
 
-<div class="flex h-full text-vscode-fg bg-vscode-bg">
-    <aside
-        class="flex flex-col w-56 border-r bg-vscode-sidebar-bg text-vscode-sidebar-fg border-vscode-sidebar-border"
-    >
-        <div
-            class="px-4 py-2 text-xs font-semibold tracking-wide uppercase bg-vscode-section-bg text-vscode-section-fg"
+<div class="flex flex-col h-full text-vscode-fg bg-vscode-bg">
+    {#if showTabs}
+        <header
+            class="flex items-center gap-4 border-b border-vscode-border px-4 h-9"
         >
-            Svelte Starter
-        </div>
-        <nav class="flex flex-col flex-1 py-1 overflow-y-auto">
-            {#each navItems as item (item.path)}
-                <a
-                    use:link
-                    href={item.path}
-                    class="px-4 py-1.5 text-sm hover:bg-vscode-list-hover {router.location ===
-                    item.path
-                        ? 'bg-vscode-list-active-bg text-vscode-list-active-fg'
-                        : ''}"
-                >
-                    {item.label}
-                </a>
-            {/each}
-        </nav>
-    </aside>
+            <span
+                class="text-xs font-semibold tracking-wide uppercase text-vscode-description"
+            >
+                Hostinger
+            </span>
+            <div class="flex flex-1 items-center gap-1" role="tablist">
+                {#each tabs as tab (tab.path)}
+                    <a
+                        use:link
+                        href={tab.path}
+                        role="tab"
+                        aria-selected={router.location === tab.path}
+                        class="px-3 py-1.5 text-xs rounded {router.location ===
+                        tab.path
+                            ? 'bg-vscode-list-active-bg text-vscode-list-active-fg'
+                            : 'hover:bg-vscode-list-hover'}"
+                    >
+                        {tab.label}
+                    </a>
+                {/each}
+            </div>
+            <div data-slot="vps-selector"></div>
+        </header>
+    {/if}
 
     <main class="flex-1 overflow-y-auto">
-        <Router {routes} />
+        <div role="tabpanel" class="h-full">
+            {#if authChecked}
+                <Router {routes} />
+            {:else}
+                <div
+                    class="flex items-center justify-center h-full text-vscode-description"
+                >
+                    Loading…
+                </div>
+            {/if}
+        </div>
     </main>
+
+    <Toast />
 </div>
