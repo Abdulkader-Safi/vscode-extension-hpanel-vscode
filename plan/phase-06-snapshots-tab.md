@@ -66,4 +66,18 @@
 3. Click Create again → see the overwrite warning copy.
 4. Backup list populates with weekly backups.
 5. Click Restore on a backup → modal opens → button disabled until hostname typed exactly → on submit, API receives the restore request.
-6. Toggle weekly backup off → confirm → schedule updates.
+6. Toggle weekly backup off → confirm → schedule updates. _(deferred — no toggle UI ships yet.)_
+
+## Deltas from this plan (for Phase 9 / polish)
+
+- **Weekly backup schedule toggle deferred.** Endpoint is not exposed by
+  `HostingerClient` and the Hostinger API docs haven't been cross-checked.
+  Verify the endpoint, add `getBackupSchedule` / `setBackupSchedule` to the
+  client, then surface the toggle at the top of `BackupList.svelte`. A TODO
+  comment is in place in the component.
+- **Shared time helpers landed.** `src/webview/lib/time.ts` exposes
+  `relativeTime`, `formatTimestamp`, and `formatBytes` — reuse these from
+  Firewall (Phase 7) and Deploy (Phase 8) instead of inlining new copies.
+- **Component-level tests are manual-only.** Same Svelte-runes / harness
+  constraint as Phase 5; the hostname-match predicate is extracted to
+  `hostnameMatch.ts` specifically so it's covered by a pure unit test.
