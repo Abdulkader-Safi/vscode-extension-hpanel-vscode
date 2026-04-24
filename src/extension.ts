@@ -266,6 +266,50 @@ export function activate(context: vscode.ExtensionContext): void {
     return client.docker.create(vpsId, { name, compose, env });
   });
 
+  // Phase 6 — Snapshots tab.
+  provider.register("getSnapshot", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.snapshots.get(vpsId);
+  });
+  provider.register("createSnapshot", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.snapshots.create(vpsId);
+  });
+  provider.register("restoreSnapshot", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.snapshots.restore(vpsId);
+  });
+  provider.register("deleteSnapshot", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.snapshots.delete(vpsId);
+  });
+  provider.register("listBackups", async ({ vpsId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.backups.list(vpsId);
+  });
+  provider.register("restoreBackup", async ({ vpsId, backupId }) => {
+    const client = await activeClient();
+    if (!client) {
+      throw new Error("Not connected to Hostinger.");
+    }
+    return client.backups.restore(vpsId, backupId);
+  });
+
   context.subscriptions.push(
     provider,
     preferences,

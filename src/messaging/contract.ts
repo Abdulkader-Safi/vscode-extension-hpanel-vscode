@@ -1,7 +1,9 @@
 import type {
+  Backup,
   DockerContainer,
   DockerProject,
   PublicKey,
+  Snapshot,
   Vps,
   VpsAction,
   VpsMetrics,
@@ -113,6 +115,17 @@ export interface RequestMap {
       env?: Record<string, string>;
     };
     response: DockerProject;
+  };
+
+  // Phase 6 — Snapshots tab.
+  getSnapshot: { request: { vpsId: number }; response: Snapshot | null };
+  createSnapshot: { request: { vpsId: number }; response: VpsAction };
+  restoreSnapshot: { request: { vpsId: number }; response: VpsAction };
+  deleteSnapshot: { request: { vpsId: number }; response: void };
+  listBackups: { request: { vpsId: number }; response: Backup[] };
+  restoreBackup: {
+    request: { vpsId: number; backupId: number };
+    response: VpsAction;
   };
 }
 

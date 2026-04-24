@@ -23,8 +23,8 @@ acceptance criteria per item.
 | 2   | [phase-02-onboarding-auth.md](./phase-02-onboarding-auth.md)                 | Token capture, validation, SecretStorage | §3.1             | ✅ Done    |
 | 3   | [phase-03-overview-tab.md](./phase-03-overview-tab.md)                       | Server identity, metrics, actions, SSH   | §3.2             | ✅ Done³   |
 | 4   | [phase-04-settings-tab.md](./phase-04-settings-tab.md)                       | Connection, VPS, polling, keys, danger   | §3.7, §4.1, §4.6 | ✅ Done⁴   |
-| 5   | [phase-05-docker-tab.md](./phase-05-docker-tab.md)                           | Compose projects, containers, logs       | §3.3             | ⬜ Pending |
-| 6   | [phase-06-snapshots-tab.md](./phase-06-snapshots-tab.md)                     | Manual snapshots, automated backups      | §3.6             | ⬜ Pending |
+| 5   | [phase-05-docker-tab.md](./phase-05-docker-tab.md)                           | Compose projects, containers, logs       | §3.3             | ✅ Done    |
+| 6   | [phase-06-snapshots-tab.md](./phase-06-snapshots-tab.md)                     | Manual snapshots, automated backups      | §3.6             | ✅ Done⁵   |
 | 7   | [phase-07-firewall-tab.md](./phase-07-firewall-tab.md)                       | Firewalls, rules, sync                   | §3.5             | ⬜ Pending |
 | 8   | [phase-08-deploy-tab.md](./phase-08-deploy-tab.md)                           | One-click deploy, wizard, pipeline       | §3.4             | ⬜ Pending |
 | 9   | [phase-09-global-behaviors-polish.md](./phase-09-global-behaviors-polish.md) | Global patterns, a11y, theming           | §4               | ⬜ Pending |
@@ -34,8 +34,9 @@ acceptance criteria per item.
 ² Phase 1: visual smoke page for design-system primitives deferred (will land alongside a `/dev/components` route when needed). Two minor deviations documented inline.
 ³ Phase 3: API field-name caveats resolved against a real account (template is an object, ipv4 is an array, metrics endpoint requires date_from/date_to, disk_space + incoming_traffic + outgoing_traffic key names). Bonus: interactive sparkline tooltips on every card + a UptimeCard not in the original spec.
 ⁴ Phase 4: shipped in two milestones (A: top-nav VpsSelector + Connection/VPS/Danger Zone; B: status bar chip + Polling/Thresholds/Deploy Defaults/SSH Keys). Account email omitted from ConnectionPanel — Hostinger API has no profile endpoint. Status bar integration test deferred to Phase 9.
+⁵ Phase 6: backup-schedule toggle endpoint is not exposed by `HostingerClient` yet (Hostinger API not yet verified). Ship the tab without the toggle — tracked as a TODO in `BackupList.svelte`; pick up during Phase 7/8 or Phase 9 polish. Added shared `src/webview/lib/time.ts` (relativeTime / formatTimestamp / formatBytes) used by this tab.
 
-**Automated state at HEAD:** `check-types` 267 files / 0 errors, `lint` 0 errors, `npm test` **71 passing**, `npm run package` produces `dist/extension.js` + `dist/webview.js` + `dist/webview.css`.
+**Automated state at HEAD:** `check-types` 283 files / 0 errors, `lint` 0 errors, `npm test` **105 passing**, `npm run package` produces `dist/extension.js` + `dist/webview.js` + `dist/webview.css`.
 
 ## Tab order rationale
 
